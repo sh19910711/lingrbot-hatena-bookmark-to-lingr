@@ -1,0 +1,20 @@
+- if @flag_login_ok
+  %h1 Hatena Bookmark to Lingr - はてなブックマークの設定を行う
+  = haml :"page/hatena_user_id"
+  = haml :"page/user_common_menu_header"
+  %h2 監視するタグの設定
+  %h3 説明
+  %ul
+    %li 監視設定を有効にしたいボタンをクリックすると有効になります
+  %h3 ボタンの種類
+  %ul
+    %li
+      %button.btn.btn-success.btn-xs 監視設定が有効なボタン
+    %li
+      %button.btn.btn-primary.btn-xs 監視設定が無効なボタン
+  %h3 はてなブックマークに登録されているタグリスト
+  %div#hatena_bookmark_tags
+  %hr
+  = button_post_request('/api/update_user_tags', 'タグ一覧を更新する', {}, "update_bookmark_tags_ok")
+  = haml :"page/user_common_menu_footer"
+

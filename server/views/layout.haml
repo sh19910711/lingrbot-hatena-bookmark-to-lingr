@@ -1,0 +1,19 @@
+<!doctype html>
+%html
+  %head
+    %meta{:charset => 'utf-8'}
+    %meta{:csrf_token => csrf_token}
+    %meta{:flag_login_ok => @flag_login_ok.to_s}
+    %title Hatena Bookmark to Lingr
+    %script{:src => '/lib/jquery/jquery.js'}
+    %script{:src => '/lib/jquery/jquery.pjax.js'}
+    %script{:src => '/lib/bootstrap/js/bootstrap.min.js'}
+    %link{:rel => 'stylesheet', :href => '/lib/bootstrap/css/bootstrap.min.css'}
+    %script{:src => '/hatena_bookmark_to_lingr/main.js'}
+    %link{:rel => 'stylesheet', :href => '/hatena_bookmark_to_lingr/main.css'}
+  %body
+    %div{:id => 'container', :class => 'container'}
+      = yield
+    %div{:id => 'notifications'}
+    %div{:class => 'container'}
+      = haml :footer

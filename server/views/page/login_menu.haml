@@ -1,0 +1,8 @@
+%h1 Hatena Bookmark to Lingr - ユーザー設定
+= haml :"page/hatena_user_id"
+= haml :"page/user_common_menu_header"
+- if @user.watching
+  = button_post_request("/api/disable_watching", "監視設定を無効にする", "", "disable_watching_ok", "", "btn-danger")
+- else
+  = button_post_request("/api/enable_watching", "監視設定を有効にする", "", "enable_watching_ok", "", "btn-success")
+= haml :"page/user_common_menu_footer"

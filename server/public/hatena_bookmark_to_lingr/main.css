@@ -1,0 +1,24 @@
+body {
+  overflow-y: scroll;
+  margin: 128px;
+}
+
+.btn-tag {
+  margin: 3px;
+}
+
+#notifications {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+}
+
+.notification {
+  width: 360px;
+  background: rgba(31, 31, 31, 0.8);
+  color: #FFF;
+  padding: 15px;
+  margin: 6px;
+  border-radius: 15px;
+}
+

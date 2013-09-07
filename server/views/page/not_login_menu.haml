@@ -1,0 +1,4 @@
+%h1 Hatena Bookmark to Lingr - ログイン
+%form{:action => '/hatena_oauth_login', :method => 'post'}
+  = csrf_tag
+  %input{:type => 'submit', :class => 'btn btn-primary', :value => 'はてなアカウントでログイン'}
