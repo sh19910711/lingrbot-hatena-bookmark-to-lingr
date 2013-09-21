@@ -348,7 +348,7 @@ class ServerApp < Sinatra::Base
     res = access_token.request(:get, 'http://b.hatena.ne.jp/atom/feed')
     list = Hash.from_xml(res.body)
     entries = list["feed"]["entry"].select {|entry|
-      tags = entry["subject"]
+      tags = entry["subject"].to_a
       tags.any? {|key_tag|
         ret = nil
         watching_tags.bsearch() {|tag|
