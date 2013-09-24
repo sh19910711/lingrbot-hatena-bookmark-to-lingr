@@ -1,6 +1,9 @@
 require 'sinatra/base'
 require 'rack/csrf'
 require 'oauth'
+require 'net/http'
+require 'uri'
+require 'cgi'
 
 require './server/lingr'
 require './server/models/user'
@@ -329,14 +332,7 @@ class ServerApp < Sinatra::Base
     end
   end
 
-  # ブックマークの更新を確認する
-  def check_user_update
-    users = User.all.to_a.select {|user|
-      user.hatena_oauth_token != ""
-    }
-    @@user_index = @@user_index % users.length
-    user = users[@@user_index]
-
+  def check_new_bookmarks(user, no_update: false, no_check_time: false)
     watching_tags = user.watching_tags
 
     access_token = OAuth::AccessToken.new(
@@ -368,21 +364,24 @@ class ServerApp < Sinatra::Base
         new_entries = entries.select {|entry|
           time = DateTime.parse(entry["issued"].to_s).to_i
           new_last_check_time = [new_last_check_time, time].max
-          time > last_check_time
+          no_check_time || time > last_check_time
         }
 
         # ここからlingrにポストする
         if new_entries.length > 0
           lingr = Lingr.new(LINGR_ROOM_ID, LINGR_BOT_ID, LINGR_BOT_SECRET)
           line = "--------------------------------------"
-          lingr.say("#{line}\n||\n|| --- はてなブックマーク速報 [#{DateTime.now.strftime("%Y-%m-%d %H:%M")}] ---\n|| #{user.hatena_user_id}さんが#{new_entries.length}件ブクマしました\n||\n#{line}")
+          now_time = DateTime.now.new_offset(Rational(9, 24)).strftime("%Y-%m-%d %H:%M")
+          lingr.say("#{line}\n||\n|| --- はてなブックマーク速報 [#{now_time}] ---\n|| #{user.hatena_user_id}さんが#{new_entries.length}件ブクマしました\n||\n#{line}")
           new_entries.each_slice(3).each {|entries|
             lingr.say(entries.map {|entry|
-              tags = entry["subject"].map {|tag|
+              tags = entry["subject"].to_a.map {|tag|
                 "#{tag}"
               }.join(', ')
+              users_count = get_bookmark_users_count entry['link'][0]['href']
               res = "# 『#{entry['title']}』\n-- url: #{entry['link'][0]['href']}\n"
               res += "-- tags: #{tags}\n" if tags.length > 0
+              res += "-- count: #{users_count} users\n"
             }.join("#{line}\n") + "#{line}\n")
           }
         end
@@ -390,11 +389,31 @@ class ServerApp < Sinatra::Base
         last_check_time = new_last_check_time
       end
 
-      user.update_attributes({
-        :last_check_time => last_check_time
-      })
+      unless no_update
+        user.update_attributes({
+          :last_check_time => last_check_time
+        })
+      end
     end
+  end
 
+  def get_bookmark_users_count url
+    url = "http://api.b.st-hatena.com/entry.count?url=#{CGI::escape(url)}"
+    uri = URI.parse url
+    Net::HTTP.get uri
+  end
+
+  # ブックマークの更新を確認する
+  def check_user_update
+    users = User.all.to_a.select {|user|
+      user.hatena_oauth_token != ""
+    }
+    @@user_index = @@user_index % users.length
+    user = users[@@user_index]
+    check_new_bookmarks(
+      user,
+      {}
+    )
     @@user_index = ( @@user_index + 1 ) % users.length
   end
 
@@ -405,8 +424,16 @@ class ServerApp < Sinatra::Base
   end
 
   configure :development do
+    puts ""
+    puts "### WARNING: DEVELOPMENT MODE ###"
+    puts ""
+
     get '/check' do
-      check_user_update
+      user = User.all(:hatena_user_id => 'sh19910711').first
+      check_new_bookmarks(
+        user,
+        :no_check_time => true,
+      )
       "OK"
     end
 
