@@ -1,7 +1,7 @@
 # A sample Gemfile
 source "https://rubygems.org"
 
-ruby '2.0.0'
+ruby '2.1.0'
 
 group :production, :development do
   gem 'sinatra'
@@ -12,10 +12,6 @@ group :production, :development do
   gem 'rack_csrf'
   gem 'oauth'
   gem 'haml'
-end
-
-group :development do
-  gem 'sinatra-contrib', require: 'sinatra/reloader'
 end
 
 group :test do
